@@ -54,8 +54,10 @@ class TestPriorConditionalOnXeff(unittest.TestCase):
         self.plot_conditional_prior(param=cos2, xeffs=self.xeffs, param_key="cos2")
 
     def test_simple_val(self):
+        a1 = 0.5
+        xeff = 0.1
         p_a1 = priors_conditional_on_xeff.a1_prior_given_xeff(
-            a1=0.1, xeff=0.2, init_a1a2qcos2_prior=self.p
+            a1=a1, xeff=xeff, init_a1a2qcos2_prior=self.p
         )
         self.assertNotEqual(p_a1, 1)
 

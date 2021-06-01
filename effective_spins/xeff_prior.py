@@ -18,7 +18,7 @@ def Di(z):
 
     return PL(1.0 - z + 0j)
 
-
+@np.vectorize
 def chi_effective_prior_from_isotropic_spins(q, aMax, xs):
     """
     Function defining the conditional priors p(chi_eff|q) corresponding to
@@ -43,9 +43,9 @@ def chi_effective_prior_from_isotropic_spins(q, aMax, xs):
     caseB = (xs < aMax * (1.0 - q) / (1.0 + q)) * (xs > q * aMax / (1.0 + q))
     caseC = (xs > aMax * (1.0 - q) / (1.0 + q)) * (xs < q * aMax / (1.0 + q))
     caseD = (
-        (xs > aMax * (1.0 - q) / (1.0 + q))
-        * (xs < aMax / (1.0 + q))
-        * (xs >= q * aMax / (1.0 + q))
+            (xs > aMax * (1.0 - q) / (1.0 + q))
+            * (xs < aMax / (1.0 + q))
+            * (xs >= q * aMax / (1.0 + q))
     )
     caseE = (xs > aMax * (1.0 - q) / (1.0 + q)) * (xs > aMax / (1.0 + q)) * (xs < aMax)
     caseF = xs >= aMax
@@ -60,112 +60,120 @@ def chi_effective_prior_from_isotropic_spins(q, aMax, xs):
     pdfs[caseZ] = (1.0 + q) / (2.0 * aMax) * (2.0 - np.log(q))
 
     pdfs[caseA] = (
-        (1.0 + q)
-        / (4.0 * q * aMax ** 2)
-        * (
-            q
-            * aMax
+            (1.0 + q)
+            / (4.0 * q * aMax ** 2)
             * (
-                4.0
-                + 2.0 * np.log(aMax)
-                - np.log(q ** 2 * aMax ** 2 - (1.0 + q) ** 2 * x_A ** 2)
+                    q
+                    * aMax
+                    * (
+                            4.0
+                            + 2.0 * np.log(aMax)
+                            - np.log(q ** 2 * aMax ** 2 - (1.0 + q) ** 2 * x_A ** 2)
+                    )
+                    - 2.0 * (1.0 + q) * x_A * np.arctanh((1.0 + q) * x_A / (q * aMax))
+                    + (1.0 + q)
+                    * x_A
+                    * (Di(-q * aMax / ((1.0 + q) * x_A)) - Di(
+                q * aMax / ((1.0 + q) * x_A)))
             )
-            - 2.0 * (1.0 + q) * x_A * np.arctanh((1.0 + q) * x_A / (q * aMax))
-            + (1.0 + q)
-            * x_A
-            * (Di(-q * aMax / ((1.0 + q) * x_A)) - Di(q * aMax / ((1.0 + q) * x_A)))
-        )
     )
 
     pdfs[caseB] = (
-        (1.0 + q)
-        / (4.0 * q * aMax ** 2)
-        * (
-            4.0 * q * aMax
-            + 2.0 * q * aMax * np.log(aMax)
-            - 2.0 * (1.0 + q) * x_B * np.arctanh(q * aMax / ((1.0 + q) * x_B))
-            - q * aMax * np.log((1.0 + q) ** 2 * x_B ** 2 - q ** 2 * aMax ** 2)
-            + (1.0 + q)
-            * x_B
-            * (Di(-q * aMax / ((1.0 + q) * x_B)) - Di(q * aMax / ((1.0 + q) * x_B)))
-        )
+            (1.0 + q)
+            / (4.0 * q * aMax ** 2)
+            * (
+                    4.0 * q * aMax
+                    + 2.0 * q * aMax * np.log(aMax)
+                    - 2.0 * (1.0 + q) * x_B * np.arctanh(q * aMax / ((1.0 + q) * x_B))
+                    - q * aMax * np.log((1.0 + q) ** 2 * x_B ** 2 - q ** 2 * aMax ** 2)
+                    + (1.0 + q)
+                    * x_B
+                    * (Di(-q * aMax / ((1.0 + q) * x_B)) - Di(
+                q * aMax / ((1.0 + q) * x_B)))
+            )
     )
 
     pdfs[caseC] = (
-        (1.0 + q)
-        / (4.0 * q * aMax ** 2)
-        * (
-            2.0 * (1.0 + q) * (aMax - x_C)
-            - (1.0 + q) * x_C * np.log(aMax) ** 2.0
-            + (aMax + (1.0 + q) * x_C * np.log((1.0 + q) * x_C))
-            * np.log(q * aMax / (aMax - (1.0 + q) * x_C))
-            - (1.0 + q)
-            * x_C
-            * np.log(aMax)
-            * (2.0 + np.log(q) - np.log(aMax - (1.0 + q) * x_C))
-            + q * aMax * np.log(aMax / (q * aMax - (1.0 + q) * x_C))
-            + (1.0 + q)
-            * x_C
-            * np.log((aMax - (1.0 + q) * x_C) * (q * aMax - (1.0 + q) * x_C) / q)
-            + (1.0 + q)
-            * x_C
-            * (Di(1.0 - aMax / ((1.0 + q) * x_C)) - Di(q * aMax / ((1.0 + q) * x_C)))
-        )
+            (1.0 + q)
+            / (4.0 * q * aMax ** 2)
+            * (
+                    2.0 * (1.0 + q) * (aMax - x_C)
+                    - (1.0 + q) * x_C * np.log(aMax) ** 2.0
+                    + (aMax + (1.0 + q) * x_C * np.log((1.0 + q) * x_C))
+                    * np.log(q * aMax / (aMax - (1.0 + q) * x_C))
+                    - (1.0 + q)
+                    * x_C
+                    * np.log(aMax)
+                    * (2.0 + np.log(q) - np.log(aMax - (1.0 + q) * x_C))
+                    + q * aMax * np.log(aMax / (q * aMax - (1.0 + q) * x_C))
+                    + (1.0 + q)
+                    * x_C
+                    * np.log(
+                (aMax - (1.0 + q) * x_C) * (q * aMax - (1.0 + q) * x_C) / q)
+                    + (1.0 + q)
+                    * x_C
+                    * (Di(1.0 - aMax / ((1.0 + q) * x_C)) - Di(
+                q * aMax / ((1.0 + q) * x_C)))
+            )
     )
 
     pdfs[caseD] = (
-        (1.0 + q)
-        / (4.0 * q * aMax ** 2)
-        * (
-            -x_D * np.log(aMax) ** 2
-            + 2.0 * (1.0 + q) * (aMax - x_D)
-            + q * aMax * np.log(aMax / ((1.0 + q) * x_D - q * aMax))
-            + aMax * np.log(q * aMax / (aMax - (1.0 + q) * x_D))
-            - x_D
-            * np.log(aMax)
+            (1.0 + q)
+            / (4.0 * q * aMax ** 2)
             * (
-                2.0 * (1.0 + q)
-                - np.log((1.0 + q) * x_D)
-                - q * np.log((1.0 + q) * x_D / aMax)
+                    -x_D * np.log(aMax) ** 2
+                    + 2.0 * (1.0 + q) * (aMax - x_D)
+                    + q * aMax * np.log(aMax / ((1.0 + q) * x_D - q * aMax))
+                    + aMax * np.log(q * aMax / (aMax - (1.0 + q) * x_D))
+                    - x_D
+                    * np.log(aMax)
+                    * (
+                            2.0 * (1.0 + q)
+                            - np.log((1.0 + q) * x_D)
+                            - q * np.log((1.0 + q) * x_D / aMax)
+                    )
+                    + (1.0 + q)
+                    * x_D
+                    * np.log(
+                (-q * aMax + (1.0 + q) * x_D) * (aMax - (1.0 + q) * x_D) / q)
+                    + (1.0 + q)
+                    * x_D
+                    * np.log(aMax / ((1.0 + q) * x_D))
+                    * np.log((aMax - (1.0 + q) * x_D) / q)
+                    + (1.0 + q)
+                    * x_D
+                    * (Di(1.0 - aMax / ((1.0 + q) * x_D)) - Di(
+                q * aMax / ((1.0 + q) * x_D)))
             )
-            + (1.0 + q)
-            * x_D
-            * np.log((-q * aMax + (1.0 + q) * x_D) * (aMax - (1.0 + q) * x_D) / q)
-            + (1.0 + q)
-            * x_D
-            * np.log(aMax / ((1.0 + q) * x_D))
-            * np.log((aMax - (1.0 + q) * x_D) / q)
-            + (1.0 + q)
-            * x_D
-            * (Di(1.0 - aMax / ((1.0 + q) * x_D)) - Di(q * aMax / ((1.0 + q) * x_D)))
-        )
     )
 
     pdfs[caseE] = (
-        (1.0 + q)
-        / (4.0 * q * aMax ** 2)
-        * (
-            2.0 * (1.0 + q) * (aMax - x_E)
-            - (1.0 + q) * x_E * np.log(aMax) ** 2
-            + np.log(aMax)
+            (1.0 + q)
+            / (4.0 * q * aMax ** 2)
             * (
-                aMax
-                - 2.0 * (1.0 + q) * x_E
-                - (1.0 + q) * x_E * np.log(q / ((1.0 + q) * x_E - aMax))
+                    2.0 * (1.0 + q) * (aMax - x_E)
+                    - (1.0 + q) * x_E * np.log(aMax) ** 2
+                    + np.log(aMax)
+                    * (
+                            aMax
+                            - 2.0 * (1.0 + q) * x_E
+                            - (1.0 + q) * x_E * np.log(q / ((1.0 + q) * x_E - aMax))
+                    )
+                    - aMax * np.log(((1.0 + q) * x_E - aMax) / q)
+                    + (1.0 + q)
+                    * x_E
+                    * np.log(
+                ((1.0 + q) * x_E - aMax) * ((1.0 + q) * x_E - q * aMax) / q)
+                    + (1.0 + q)
+                    * x_E
+                    * np.log((1.0 + q) * x_E)
+                    * np.log(q * aMax / ((1.0 + q) * x_E - aMax))
+                    - q * aMax * np.log(((1.0 + q) * x_E - q * aMax) / aMax)
+                    + (1.0 + q)
+                    * x_E
+                    * (Di(1.0 - aMax / ((1.0 + q) * x_E)) - Di(
+                q * aMax / ((1.0 + q) * x_E)))
             )
-            - aMax * np.log(((1.0 + q) * x_E - aMax) / q)
-            + (1.0 + q)
-            * x_E
-            * np.log(((1.0 + q) * x_E - aMax) * ((1.0 + q) * x_E - q * aMax) / q)
-            + (1.0 + q)
-            * x_E
-            * np.log((1.0 + q) * x_E)
-            * np.log(q * aMax / ((1.0 + q) * x_E - aMax))
-            - q * aMax * np.log(((1.0 + q) * x_E - q * aMax) / aMax)
-            + (1.0 + q)
-            * x_E
-            * (Di(1.0 - aMax / ((1.0 + q) * x_E)) - Di(q * aMax / ((1.0 + q) * x_E)))
-        )
     )
 
     pdfs[caseF] = 0.0
@@ -174,8 +182,8 @@ def chi_effective_prior_from_isotropic_spins(q, aMax, xs):
     if np.any(pdfs == -1):
         boundary = pdfs == -1
         pdfs[boundary] = 0.5 * (
-            chi_effective_prior_from_isotropic_spins(q, aMax, xs[boundary] + 1e-6)
-            + chi_effective_prior_from_isotropic_spins(q, aMax, xs[boundary] - 1e-6)
+                chi_effective_prior_from_isotropic_spins(q, aMax, xs[boundary] + 1e-6)
+                + chi_effective_prior_from_isotropic_spins(q, aMax, xs[boundary] - 1e-6)
         )
 
     return np.real(pdfs)
@@ -188,14 +196,18 @@ def get_marginalised_chi_eff(xs):
     allowed dimensionless component spin magnitude aMax=1
 
     Inputs
-    xs: Chi_effective value or values at which we wish to compute prior
+    xs: Chi_effective value at which we wish to compute prior
 
     Returns:
     Array of prior values
     """
+    # param to marginalise
     qs = np.linspace(0, 1, 300)
-    p_xeff = np.zeros(len(qs))
-    for q in qs[1:]:  # skip over q=0
-        p_xeff += np.array(chi_effective_prior_from_isotropic_spins(q, aMax=1, xs=xs))
-    p_xeff = p_xeff / (len(qs) - 1)
+
+    # Ensure that `xs` is an array
+    xs = np.reshape(xs, -1)
+    p_xeff = np.zeros(len(xs))
+    for i, x in enumerate(xs):
+        p_xeff_q = np.sum(chi_effective_prior_from_isotropic_spins(qs, aMax=1, xs=x))
+        p_xeff[i] = p_xeff_q / len(qs)
     return p_xeff
