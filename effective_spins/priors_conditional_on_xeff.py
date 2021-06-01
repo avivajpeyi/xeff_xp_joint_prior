@@ -1,7 +1,9 @@
 """a1, a2, q, theta1, theta2 conditional on xeff"""
 import numpy as np
-from scipy import stats
 import pandas as pd
+from scipy import stats
+
+from .xeff_prior import get_marginalised_chi_eff as p_xeff
 
 MCMC_SAMPLES = 10000
 
@@ -19,21 +21,13 @@ def _p_xeff_given_a1a2qc2(xeff, a1, a2, q, c2):
     return p_xeff_given_a1a2qc2
 
 
-def _p_a1a2qc2(a1, a2, q, c2, init_a1a2qcos2_prior):
-    p_a1 = init_a1a2qcos2_prior["a1"].prob(a1)
-    p_a2 = init_a1a2qcos2_prior["a2"].prob(a2)
-    p_c2 = init_a1a2qcos2_prior["cos2"].prob(c2)
-    p_q = init_a1a2qcos2_prior["q"].prob(q)
-    return p_a1 * p_a2 * p_c2 * p_q
-
-
 @np.vectorize
 def _p_param_given_xeff(param, xeff, init_a1a2qcos2_prior, param_key):
     s = pd.DataFrame(init_a1a2qcos2_prior.sample(MCMC_SAMPLES))
     s[param_key] = param
     p_xeff_given_a1a2qc2 = _p_xeff_given_a1a2qc2(xeff, s.a1, s.a2, s.q, s.cos2)
-    p_a1a2qc2 = _p_a1a2qc2(s.a1, s.a2, s.q, s.cos2, init_a1a2qcos2_prior)
-    return np.sum(p_a1a2qc2 * p_xeff_given_a1a2qc2) / MCMC_SAMPLES
+    p_param = init_a1a2qcos2_prior[param_key].prob(param)
+    return 1.0 / p_xeff(xeff) * np.sum(p_param * p_xeff_given_a1a2qc2) / MCMC_SAMPLES
 
 
 def a1_prior_given_xeff(a1, xeff, init_a1a2qcos2_prior):
