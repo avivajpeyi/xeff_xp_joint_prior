@@ -9,7 +9,6 @@ from effective_spins.conversions import (
     calculate_xp,
     calculate_xp_given_xeff,
 )
-from effective_spins.xeff_prior import get_marginalised_chi_eff
 
 
 def get_traditional_prior():
@@ -22,12 +21,7 @@ def get_traditional_prior():
     return priors
 
 
-def get_xeff_prior():
-    priors = PriorDict()
-    xeff = np.linspace(-1, 1, num=1000)
-    p_xeff = get_marginalised_chi_eff(xeff)
-    priors["xeff"] = Interped(xx=xeff, yy=p_xeff)
-    return priors
+
 
 
 def get_traditional_samples(num_samples=10 ** 5):
@@ -50,7 +44,7 @@ def plot_funct_and_samples(func, samples, limits, labels, func_kwargs={}, bins=5
     yvals = func(xvals, **func_kwargs)
     fig = plt.figure(figsize=(15, 4))
     ax1 = fig.add_subplot(111)
-    ax1.hist(samples, density=True, bins=bins)
+    # ax1.hist(samples, density=True, bins=bins)
     ax1.plot(xvals, yvals, color="black")
     ax1.xaxis.grid(True, which="major", ls=":", color="grey")
     ax1.yaxis.grid(True, which="major", ls=":", color="grey")

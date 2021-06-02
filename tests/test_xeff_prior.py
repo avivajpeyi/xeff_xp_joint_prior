@@ -2,7 +2,7 @@ import os
 import shutil
 import unittest
 
-from effective_spins import xeff_prior
+from effective_spins.priors_conditional_on_xeff import p_xeff
 from . import utils
 
 import numpy as np
@@ -19,7 +19,7 @@ class TestXeffPrior(unittest.TestCase):
     def test_prior_on_xeff(self):
         samples = utils.get_traditional_samples()
         fig = utils.plot_funct_and_samples(
-            xeff_prior.get_marginalised_chi_eff,
+            vectorized_pxeff,
             samples.xeff,
             [-1, 1],
             [r"$\chi_{\rm eff}$", r"$p(\chi_{\rm eff})$"],
@@ -27,9 +27,17 @@ class TestXeffPrior(unittest.TestCase):
         fig.savefig(f"{self.outdir}/p_xeff.png")
 
     def test_simple_p_xeff_calc(self):
-        p_xeff = xeff_prior.get_marginalised_chi_eff(xs=np.linspace(-1,1, 30))
-        self.assertEqual(p_xeff, 1)
+        p_xeff_val = p_xeff(xeff=1, init_a1a2qcos2_prior=utils.get_traditional_prior())
+        self.assertEqual(p_xeff_val, 0)
+        p_xeff_val = p_xeff(xeff=-1, init_a1a2qcos2_prior=utils.get_traditional_prior())
+        self.assertEqual(p_xeff_val, 0)
+        p_xeff_val = p_xeff(xeff=0, init_a1a2qcos2_prior=utils.get_traditional_prior())
+        self.assertGreater(p_xeff_val, 0)
 
+@np.vectorize
+def vectorized_pxeff(xeff):
+    init_p = utils.get_traditional_prior()
+    return p_xeff(xeff, init_p)
 
 if __name__ == "__main__":
     unittest.main()
