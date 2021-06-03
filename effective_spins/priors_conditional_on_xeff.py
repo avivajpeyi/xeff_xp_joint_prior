@@ -24,7 +24,6 @@ def p_xeff_given_a1a2qc2(
     return uniform.pdf(xeff, loc=xeff_min, scale=xeff_max - xeff_min)
 
 
-@xp.vectorize
 def p_param_and_xeff(
         param: float, xeff: float,
         init_a1a2qcos2_prior: PriorDict, param_key: str
@@ -48,10 +47,13 @@ def p_param_given_xeff(
     return _p_param_and_xeff / p_xeff(xeff, init_a1a2qcos2_prior)
 
 
-def p_xeff(xeff: float, init_a1a2qcos2_prior: PriorDict) -> float:
+def p_xeff(xeff: float, init_a1a2qcos2_prior: PriorDict,
+           a1s=[], p_a1_and_xeff=[]) -> float:
     """
     p(xeff) = int_{ai \in a} p(a and xeff) da, O(n^3)
     """
-    a1_vals = xp.linspace(0, 1, INTEGRATION_POINTS)
-    p_a1_and_xeff = p_param_and_xeff(a1_vals, xeff, init_a1a2qcos2_prior, 'a1')
-    return xp.trapz(y=p_a1_and_xeff, x=a1_vals, axis=0)
+    if len(p_a1_and_xeff) == 0 and len(a1s) == 0:
+        a1s = xp.linspace(0, 1, INTEGRATION_POINTS)
+        p_a1_and_xeff = [p_param_and_xeff(a1, xeff, init_a1a2qcos2_prior, 'a1') for a1
+                         in a1s]
+    return xp.trapz(y=p_a1_and_xeff, x=a1s, axis=0)
