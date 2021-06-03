@@ -52,7 +52,6 @@ def p_xeff(xeff, init_a1a2qcos2_prior):
     p(xeff) = int_{ai \in a} p(a and xeff) da, O(n^3)
     """
     a1_vals = np.linspace(0, 1, INTEGRATION_POINTS)
-    a1_key = 'a1'
     da = a1_vals[1] - a1_vals[0]
-    p_a1_and_xeff = p_param_and_xeff(a1_vals, xeff, init_a1a2qcos2_prior, a1_key)
-    return np.sum(p_a1_and_xeff  * da)
+    p_a1_and_xeff = p_param_and_xeff(a1_vals, xeff, init_a1a2qcos2_prior, 'a1')
+    return np.sum(p_a1_and_xeff * da)
