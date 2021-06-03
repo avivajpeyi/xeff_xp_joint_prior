@@ -29,12 +29,12 @@ def p_param_and_xeff(
         init_a1a2qcos2_prior: PriorDict, param_key: str
 ) -> float:
     """p(param and xeff), O(n^2)"""
-    p_xeff_given_other = p_xeff_given_a1a2qc2(
-        param, xeff, init_a1a2qcos2_prior, param_key
-    )
+    p_xeff_given_other = xp.asanyarray(
+        p_xeff_given_a1a2qc2(
+            param, xeff, init_a1a2qcos2_prior, param_key
+        ))
     print(type(p_xeff_given_other))
     p_param = init_a1a2qcos2_prior[param_key].prob(param)
-    print(type(p_param))
     p_xeff_given_other = xp.nan_to_num(p_xeff_given_other)
     # dont need p_other, only p_param as MCMC
     return (1.0 / MCMC_SAMPLES) * xp.sum(p_xeff_given_other * p_param)
