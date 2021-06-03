@@ -4,8 +4,8 @@ from bilby.core.prior import PriorDict
 
 from .cupy_utils import uniform, xp
 
-MCMC_SAMPLES = 1000
-INTEGRATION_POINTS = 100
+MCMC_SAMPLES = 10000
+INTEGRATION_POINTS = 1000
 
 
 def xeff_lim(a1: xp.ndarray, a2: xp.ndarray, q: xp.ndarray, cos2: xp.ndarray):
@@ -33,7 +33,6 @@ def p_param_and_xeff(
         p_xeff_given_a1a2qc2(
             param, xeff, init_a1a2qcos2_prior, param_key
         ))
-    print(type(p_xeff_given_other))
     p_param = init_a1a2qcos2_prior[param_key].prob(param)
     p_xeff_given_other = xp.nan_to_num(p_xeff_given_other)
     # dont need p_other, only p_param as MCMC

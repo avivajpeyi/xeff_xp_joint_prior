@@ -1,3 +1,4 @@
+"""Script to benchmark CuPy vs NumPy"""
 import time
 
 import numpy as np

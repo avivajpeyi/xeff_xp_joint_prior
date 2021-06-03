@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
+*p_*
 *outdir
 .idea
 node_modules
