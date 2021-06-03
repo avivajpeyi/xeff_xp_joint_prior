@@ -3,7 +3,8 @@ import unittest
 
 import matplotlib.pyplot as plt
 import numpy as np
-from bilby.core.prior import Normal, Uniform
+import pytest
+from bilby.core.prior import Uniform
 
 from effective_spins import distribution_rules
 
@@ -20,52 +21,73 @@ class TestDistributionRules(unittest.TestCase):
         pdf = dist.prob(samples)
         return samples, pdf, dist
 
-    def normal_distribution(self, mu=0, sigma=1):
-        dist = Normal(mu=mu, sigma=sigma)
-        samples = dist.sample(self.N)
-        pdf = dist.prob(samples)
-        return samples, pdf, dist
-
-    # def tearDown(self):
-    #     if os.path.exists(self.outdir):
-    #         shutil.rmtree(self.outdir)
+    def tearDown(self):
+        import shutil
+        if os.path.exists(self.outdir):
+            shutil.rmtree(self.outdir)
 
     def test_sum_rule(self):
         a, pdf_a, dist_a = self.uniform_distribution()
         b, pdf_b, dist_b = self.uniform_distribution(0, 1)
-        samples_c = a + b
         a_vals = np.linspace(-1, 1, self.N)
         z_vals = np.linspace(-1, 2, self.N)
         pdf_c = distribution_rules.sum_distribution(
             z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
         )
-        plot_distribution(
-            samples_c, pdf_c, z_vals, f"{self.outdir}/sum.png", title="Sum of Unif"
-        )
+        self.assertGreater(np.sum(pdf_c), 1)
 
     def test_product_rule(self):
         a, pdf_a, dist_a = self.uniform_distribution()
         b, pdf_b, dist_b = self.uniform_distribution(0, 1)
         a_vals = np.linspace(-1, 1, self.N)
         z_vals = np.linspace(-1, 1, self.N)
-        samples_c = a * b
         pdf_c = distribution_rules.product_distribution(
             z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
         )
-        plot_distribution(
-            samples_c, pdf_c, z_vals, f"{self.outdir}/prod.png", title="Prod of Unif"
-        )
+        self.assertGreater(np.sum(pdf_c), 1)
 
     def test_inverse_rule(self):
         a, pdf_a, dist_a = self.uniform_distribution()
         a_vals = np.linspace(-10, 10, self.N)
-        samples_c = 1.0 / a
         pdf_c = distribution_rules.inverse_distribution(
             a_vals=a_vals, pdf_a=dist_a.prob
         )
+        self.assertGreater(np.sum(pdf_c), 1)
+
+    @pytest.mark.plot
+    def test_dist_plots(self):
+        a, pdf_a, dist_a = self.uniform_distribution()
+        b, pdf_b, dist_b = self.uniform_distribution(0, 1)
+        a_vals = np.linspace(-10, 10, self.N)
+        z_vals = np.linspace(-10, 10, self.N)
+        samples_inverse = 1.0 / a
+        samples_sum = a + b
+        sumples_prod = a * b
+
         plot_distribution(
-            samples_c,
-            pdf_c,
+            samples_sum,
+            distribution_rules.sum_distribution(
+                z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+            ),
+            z_vals,
+            f"{self.outdir}/sum.png",
+            title="Sum of Unif"
+        )
+        plot_distribution(
+            sumples_prod,
+            distribution_rules.product_distribution(
+                z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+            ),
+            z_vals,
+            f"{self.outdir}/prod.png",
+            title="Prod of Unif"
+        )
+
+        plot_distribution(
+            samples_inverse,
+            distribution_rules.inverse_distribution(
+                a_vals=a_vals, pdf_a=dist_a.prob
+            ),
             a_vals,
             f"{self.outdir}/inverse.png",
             title="Inverse of unif",

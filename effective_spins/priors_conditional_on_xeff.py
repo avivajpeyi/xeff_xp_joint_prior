@@ -7,9 +7,10 @@ from scipy import stats
 MCMC_SAMPLES = 1000
 INTEGRATION_POINTS = 100
 
+
 def xeff_lim(a1: np.ndarray, a2: np.ndarray, q: np.ndarray, cos2: np.ndarray):
-    """Max lim xeff given a1, a2, q, c2 (and assuming c1 in [-1,1])."""
-    return a1 / (1 + q) + (a2 * q * cos2) / (1 + q)
+    """Min and max xeff lim given a1, a2, q, c2 (and assuming c1 in [-1,1])."""
+    return (-a1 + (a2 * q * cos2)) / (1 + q), (a1 + (a2 * q * cos2)) / (1 + q)
 
 
 def p_xeff_given_a1a2qc2(
@@ -19,8 +20,8 @@ def p_xeff_given_a1a2qc2(
     """p(xeff|a1,a2,q,c2), O(n)"""
     s = pd.DataFrame(init_a1a2qcos2_prior.sample(MCMC_SAMPLES))
     s[param_key] = param
-    _xeff_lim = xeff_lim(s.a1, s.a2, s.q, s.cos2)
-    return stats.uniform.pdf(xeff, loc=-_xeff_lim, scale=2 * _xeff_lim)
+    xeff_min, xeff_max = xeff_lim(s.a1, s.a2, s.q, s.cos2)
+    return stats.uniform.pdf(xeff, loc=xeff_min, scale=xeff_max - xeff_min)
 
 
 @np.vectorize
@@ -55,3 +56,5 @@ def p_xeff(xeff, init_a1a2qcos2_prior):
     da = a1_vals[1] - a1_vals[0]
     p_a1_and_xeff = p_param_and_xeff(a1_vals, xeff, init_a1a2qcos2_prior, 'a1')
     return np.sum(p_a1_and_xeff * da)
+
+

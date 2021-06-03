@@ -12,6 +12,7 @@ class TestXpGivenXeffPrior(unittest.TestCase):
         os.makedirs(self.outdir, exist_ok=True)
 
     def tearDown(self):
+        import shutil
         if os.path.exists(self.outdir):
             shutil.rmtree(self.outdir)
 

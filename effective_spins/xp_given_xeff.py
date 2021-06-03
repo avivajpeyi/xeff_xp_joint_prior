@@ -1,10 +1,12 @@
 import numpy as np
 
 from . import distribution_rules as dist
-from .priors_conditional_on_xeff import a1_prior_given_xeff as p_a1
-from .priors_conditional_on_xeff import a2_prior_given_xeff as p_a2
-from .priors_conditional_on_xeff import cos2_prior_given_xeff as p_c2
-from .priors_conditional_on_xeff import q_prior_given_xeff as p_q
+from .priors_conditional_on_xeff import p_param_given_xeff
+
+p_a1 = lambda param, xeff, init_a1a2qcos2_prior: p_param_given_xeff(param, xeff, init_a1a2qcos2_prior, 'a1')
+p_a2 = lambda param, xeff, init_a1a2qcos2_prior: p_param_given_xeff(param, xeff, init_a1a2qcos2_prior, 'a2')
+p_c2 = lambda param, xeff, init_a1a2qcos2_prior: p_param_given_xeff(param, xeff, init_a1a2qcos2_prior, 'cos2')
+p_q = lambda param, xeff, init_a1a2qcos2_prior: p_param_given_xeff(param, xeff, init_a1a2qcos2_prior, 'q')
 
 N = 1000
 

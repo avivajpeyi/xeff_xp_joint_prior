@@ -12,7 +12,7 @@ def product_distribution(
     kwargs_b={},
 ):
     """
-    f_{Z}(z) = \int f_{A}(a) f_{B}(z/a) 1/|a| da
+    f_{Z}(z) = int f_{A}(a) f_{B}(z/a) 1/|a| da
     """
     fz = np.zeros(len(z_vals))
     for i, z in enumerate(z_vals):
@@ -32,7 +32,7 @@ def sum_distribution(
     kwargs_b={},
 ):
     """
-    f_{Z}(z) = \sum_{a\inA} f_{A}(a) f_{B}(z-a) da
+    f_{Z}(z) = sum_{a\inA} f_{A}(a) f_{B}(z-a) da
     """
     fz = np.zeros(len(z_vals))
     for i, z in enumerate(z_vals):
