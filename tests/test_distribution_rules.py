@@ -21,10 +21,10 @@ class TestDistributionRules(unittest.TestCase):
         pdf = dist.prob(samples)
         return samples, pdf, dist
 
-    def tearDown(self):
-        import shutil
-        if os.path.exists(self.outdir):
-            shutil.rmtree(self.outdir)
+    # def tearDown(self):
+    #     import shutil
+    #     if os.path.exists(self.outdir):
+    #         shutil.rmtree(self.outdir)
 
     def test_sum_rule(self):
         a, pdf_a, dist_a = self.uniform_distribution()

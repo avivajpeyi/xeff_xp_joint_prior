@@ -12,10 +12,10 @@ class TestXeffPrior(unittest.TestCase):
         self.outdir = "tests/xeff_testoutdir"
         os.makedirs(self.outdir, exist_ok=True)
 
-    def tearDown(self):
-        import shutil
-        if os.path.exists(self.outdir):
-            shutil.rmtree(self.outdir)
+    # def tearDown(self):
+    #     import shutil
+    #     if os.path.exists(self.outdir):
+    #         shutil.rmtree(self.outdir)
 
     def test_simple_p_xeff_calc(self):
         p_xeff_val = p_xeff(xeff=1, init_a1a2qcos2_prior=utils.get_traditional_prior())
