@@ -4,7 +4,8 @@ try:
     from cupyx.scipy.stats import uniform
 
     CUPY_LOADED = True
-except ImportError:
+except ImportError as e:
+    print(f"Cupy cant be loaded: {e}")
     import numpy as xp
     from scipy.stats import uniform
 
