@@ -14,28 +14,41 @@ class TestPriorConditionalOnXeff(unittest.TestCase):
         self.outdir = "tests/conditional_testoutdir"
         os.makedirs(self.outdir, exist_ok=True)
         self.p = utils.get_traditional_prior()
-        self.xeffs = [-0.75, -0.5, -0.25, -0.1, 0.1, 0.25, 0.5, 0.75]
-        self.N = 100
+        self.xeffs = [-0.75,  -0.25,  0.1,  0.5]
+        self.N = 50
 
     # def tearDown(self):
     #     if os.path.exists(self.outdir):
     #         shutil.rmtree(self.outdir)
 
     def plot_conditional_prior(self, param, xeffs, param_key):
-        fig, ax = plt.subplots()
-        for xeff in tqdm(xeffs, desc=f"p({param_key}|xeff) "):
-            p_param = priors_conditional_on_xeff._p_param_given_xeff(
-                param=param,
+        fig, axs = plt.subplots(nrows=2, ncols=1, sharex=True)
+        for xeff in tqdm(xeffs, desc=f"p({param_key} and xeff) "):
+            priors_conditional_on_xeff.MCMC_SAMPLES = 1000
+            p_param = [priors_conditional_on_xeff.p_param_and_xeff(
+                param=p,
                 xeff=xeff,
                 init_a1a2qcos2_prior=self.p,
                 param_key=param_key,
-            )
-            ax.plot(param, p_param, "-", label=f"xeff={xeff}")
-        ax.set_ylabel(f"p({param_key}|xeff)")
-        ax.set_xlabel(param_key)
-        ax.set_xlim(min(param), max(param))
-        ax.legend(loc="upper right")
-        plt.savefig(f"{self.outdir}/p_{param_key}_given_xeff.png")
+            ) for p in param]
+            axs[0].plot(param, p_param, "-", label=f"xeff={xeff}")
+        for xeff in tqdm(xeffs, desc=f"p({param_key}|xeff) "):
+            priors_conditional_on_xeff.MCMC_SAMPLES = 100
+            p_param = [priors_conditional_on_xeff.p_param_given_xeff(
+                param=p,
+                xeff=xeff,
+                init_a1a2qcos2_prior=self.p,
+                param_key=param_key,
+            ) for p in param]
+            axs[1].plot(param, p_param, "-")
+        axs[0].set_ylabel(f"p({param_key} and xeff)")
+        axs[1].set_ylabel(f"p({param_key}|xeff)")
+        axs[0].set_xlabel(param_key)
+        axs[0].set_xlim(min(param), max(param))
+        axs[0].legend(loc="upper right")
+
+        plt.tight_layout()
+        plt.savefig(f"{self.outdir}/p_{param_key}_and_xeff.png")
 
     def test_a1_conditional_priors(self):
         a1 = np.linspace(0, 1, self.N)
@@ -56,8 +69,7 @@ class TestPriorConditionalOnXeff(unittest.TestCase):
     def test_simple_val(self):
         a1 = 0.5
         xeff = 0.1
-        p_a1 = priors_conditional_on_xeff.a1_prior_given_xeff(
-            a1=a1, xeff=xeff, init_a1a2qcos2_prior=self.p
+        p_a1 = priors_conditional_on_xeff.p_param_given_xeff(param=a1, xeff=xeff, init_a1a2qcos2_prior=self.p, param_key="a1"
         )
         self.assertNotEqual(p_a1, 1)
 

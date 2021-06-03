@@ -39,12 +39,13 @@ def get_traditional_samples(num_samples=10 ** 5):
     return s
 
 
-def plot_funct_and_samples(func, samples, limits, labels, func_kwargs={}, bins=50):
+def plot_funct_and_samples(func, samples, limits, labels, func_kwargs={}, bins=100):
     xvals = np.linspace(limits[0], limits[1], 300)
     yvals = func(xvals, **func_kwargs)
+    print(max(yvals))
     fig = plt.figure(figsize=(15, 4))
     ax1 = fig.add_subplot(111)
-    # ax1.hist(samples, density=True, bins=bins)
+    ax1.hist(samples, density=True, bins=bins)
     ax1.plot(xvals, yvals, color="black")
     ax1.xaxis.grid(True, which="major", ls=":", color="grey")
     ax1.yaxis.grid(True, which="major", ls=":", color="grey")
@@ -52,4 +53,5 @@ def plot_funct_and_samples(func, samples, limits, labels, func_kwargs={}, bins=5
     ax1.set_xlabel(labels[0], fontsize=18)
     ax1.set_ylabel(labels[1], fontsize=18)
     ax1.set_xlim(limits[0], limits[1])
+    plt.tight_layout()
     return fig
