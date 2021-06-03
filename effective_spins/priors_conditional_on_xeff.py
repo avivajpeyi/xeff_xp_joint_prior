@@ -32,7 +32,7 @@ def p_param_and_xeff(
     p_xeff_given_other = p_xeff_given_a1a2qc2(
         param, xeff, init_a1a2qcos2_prior, param_key
     )
-    p_param = init_a1a2qcos2_prior[param_key].prob(param)
+    p_param = xp.asanyarray(init_a1a2qcos2_prior[param_key].prob(param))
     p_xeff_given_other = xp.nan_to_num(p_xeff_given_other)
     # dont need p_other, only p_param as MCMC
     return (1.0 / MCMC_SAMPLES) * xp.sum(p_xeff_given_other * p_param)
