@@ -9,7 +9,7 @@ from tqdm.auto import tqdm
 
 from effective_spins import priors_conditional_on_xeff
 from effective_spins.priors_conditional_on_xeff import p_param_and_xeff
-from effective_spins.probability_cacher import store_probabilities
+from effective_spins.probability_cacher import plot_probs, store_probabilities
 
 N = 1000
 
@@ -43,6 +43,11 @@ def generate_dataset(param_key):
     df = pd.DataFrame(data)
     fname = os.path.join(OUTDIR, f"{prob_key}.h5")
     store_probabilities(df, fname)
+    plot_probs(
+        x=df[param_key], y=df["xeff"], p=df[prob_key],
+        xlabel=param_key, ylabel="xeff", plabel=prob_key,
+        fname=fname.replace('.h5', '.png')
+    )
     print(f"Saved {fname}")
 
 
