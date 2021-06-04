@@ -4,7 +4,7 @@ import unittest
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from bilby.core.prior import Uniform
+from .utils import uniform_distribution
 
 from effective_spins import distribution_rules
 
@@ -15,11 +15,7 @@ class TestDistributionRules(unittest.TestCase):
         os.makedirs(self.outdir, exist_ok=True)
         self.N = 10000
 
-    def uniform_distribution(self, min=-1, max=1):
-        dist = Uniform(minimum=min, maximum=max)
-        samples = dist.sample(self.N)
-        pdf = dist.prob(samples)
-        return samples, pdf, dist
+
 
     # def tearDown(self):
     #     import shutil
@@ -27,8 +23,8 @@ class TestDistributionRules(unittest.TestCase):
     #         shutil.rmtree(self.outdir)
 
     def test_sum_rule(self):
-        a, pdf_a, dist_a = self.uniform_distribution()
-        b, pdf_b, dist_b = self.uniform_distribution(0, 1)
+        a, pdf_a, dist_a = uniform_distribution(N=self.N)
+        b, pdf_b, dist_b = uniform_distribution(0, 1, N=self.N)
         a_vals = np.linspace(-1, 1, self.N)
         z_vals = np.linspace(-1, 2, self.N)
         pdf_c = distribution_rules.sum_distribution(
@@ -37,8 +33,8 @@ class TestDistributionRules(unittest.TestCase):
         self.assertGreater(np.sum(pdf_c), 1)
 
     def test_product_rule(self):
-        a, pdf_a, dist_a = self.uniform_distribution()
-        b, pdf_b, dist_b = self.uniform_distribution(0, 1)
+        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
+        b, pdf_b, dist_b = self.uniform_distribution(0, 1,N=self.N)
         a_vals = np.linspace(-1, 1, self.N)
         z_vals = np.linspace(-1, 1, self.N)
         pdf_c = distribution_rules.product_distribution(
@@ -47,7 +43,7 @@ class TestDistributionRules(unittest.TestCase):
         self.assertGreater(np.sum(pdf_c), 1)
 
     def test_inverse_rule(self):
-        a, pdf_a, dist_a = self.uniform_distribution()
+        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
         a_vals = np.linspace(-10, 10, self.N)
         pdf_c = distribution_rules.inverse_distribution(
             a_vals=a_vals, pdf_a=dist_a.prob
@@ -56,8 +52,8 @@ class TestDistributionRules(unittest.TestCase):
 
     @pytest.mark.plot
     def test_dist_plots(self):
-        a, pdf_a, dist_a = self.uniform_distribution()
-        b, pdf_b, dist_b = self.uniform_distribution(0, 1)
+        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
+        b, pdf_b, dist_b = self.uniform_distribution(0, 1,N=self.N)
         a_vals = np.linspace(-10, 10, self.N)
         z_vals = np.linspace(-10, 10, self.N)
         samples_inverse = 1.0 / a

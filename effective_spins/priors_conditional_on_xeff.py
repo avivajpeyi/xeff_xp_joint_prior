@@ -1,6 +1,7 @@
 """a1, a2, q, theta1, theta2 conditional on xeff"""
 import pandas as pd
 from bilby.core.prior import PriorDict
+from typing import Optional
 
 from .cupy_utils import uniform, xp
 
@@ -48,7 +49,7 @@ def p_param_given_xeff(
     return _p_param_and_xeff / p_xeff(xeff, init_a1a2qcos2_prior)
 
 
-def p_xeff(xeff: float, init_a1a2qcos2_prior: PriorDict,
+def p_xeff(xeff: float, init_a1a2qcos2_prior: Optional[PriorDict]=None,
            a1s=[], p_a1_and_xeff=[]) -> float:
     """
     p(xeff) = int_{ai \in a} p(a and xeff) da, O(n^3)

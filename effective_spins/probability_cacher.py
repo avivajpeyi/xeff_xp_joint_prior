@@ -20,6 +20,7 @@ def load_probabilities(fname) -> pd.DataFrame:
 
 
 def plot_probs(x, y, p, xlabel, ylabel, plabel, fname):
+    plt.close('all')
     plt.tricontour(x, y, p, 15, linewidths=0.5, colors='k')
     cmap = plt.tricontourf(
         x, y, p, 15,

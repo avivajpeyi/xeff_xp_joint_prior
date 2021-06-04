@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from bilby.core.prior import Interped, Uniform
+from bilby.core.prior import Uniform
 from bilby.core.prior import PriorDict
 
 from effective_spins.conversions import (
@@ -20,6 +20,12 @@ def get_traditional_prior():
     priors["cos1"] = Uniform(minimum=-1, maximum=1)
     return priors
 
+
+def uniform_distribution(min=-1, max=1, N=10000):
+    dist = Uniform(minimum=min, maximum=max)
+    samples = dist.sample(N)
+    pdf = dist.prob(samples)
+    return samples, pdf, dist
 
 
 
