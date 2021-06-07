@@ -1,6 +1,8 @@
-import matplotlib.pyplot as plt
-import pandas as pd
 import os
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 plt.style.use(
     'https://gist.githubusercontent.com/avivajpeyi/4d9839b1ceb7d3651cbb469bc6b0d69b/raw/4ee4a870126653d542572372ff3eee4e89abcab0/publication.mplstyle')
@@ -28,6 +30,7 @@ def load_probabilities(fname) -> pd.DataFrame:
 def plot_probs(x, y, p, xlabel, ylabel, plabel, fname):
     plt.close('all')
     try:
+        p = np.nan_to_num(p)
         plt.tricontour(x, y, p, 15, linewidths=0.5, colors='k')
         cmap = plt.tricontourf(
             x, y, p, 15,
@@ -35,7 +38,7 @@ def plot_probs(x, y, p, xlabel, ylabel, plabel, fname):
             cmap='inferno'
         )
     except Exception:
-        cmap = plt.scatter(x,y,c=p)
+        cmap = plt.scatter(x, y, c=p, cmap='inferno')
     plt.colorbar(cmap, label=plabel)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)

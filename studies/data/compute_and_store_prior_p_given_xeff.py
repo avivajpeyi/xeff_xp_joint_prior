@@ -23,14 +23,15 @@ def compute_and_store_p_param_given_xeff(param_key, prior_xeff_fname):
     probability_cacher.store_probabilities(df, fname)
     probability_cacher.plot_probs(
         x=df[param_key], y=df['xeff'], p=df[p_param_given_xeff_key],
-        xlabel=param_key, ylabel="xeff", plabel=p_param_given_xeff_key.replace("_", " "),
+        xlabel=param_key, ylabel="xeff", plabel=p_param_given_xeff_key.replace('_', ' '),
         fname=fname.replace('.h5', '.png')
     )
     print(f"Saved {fname}")
 
+
 def main():
     os.makedirs(OUTDIR, exist_ok=True)
-    for k in ['a1','a2','q','cos2']:
+    for k in ['a1', 'a2', 'q', 'cos2']:
         compute_and_store_p_param_given_xeff(
             param_key=k,
             prior_xeff_fname='p_xeff/p_xeff.h5'
