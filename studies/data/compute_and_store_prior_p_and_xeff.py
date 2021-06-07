@@ -45,7 +45,7 @@ def generate_dataset(param_key):
     store_probabilities(df, fname)
     plot_probs(
         x=df[param_key], y=df["xeff"], p=df[prob_key],
-        xlabel=param_key, ylabel="xeff", plabel=prob_key,
+        xlabel=param_key, ylabel="xeff", plabel=prob_key.replace("_", " "),
         fname=fname.replace('.h5', '.png')
     )
     print(f"Saved {fname}")
@@ -55,7 +55,7 @@ def create_parser_and_read_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--make-dag", help="Make dag", action="store_true")
     parser.add_argument("--testing", help="test data gen", action="store_true")
-    parser.add_argument("--param", help=f"One of {VALID_PARAMS}", type=str)
+    parser.add_argument("--param_key", help=f"One of {VALID_PARAMS}", type=str)
     args = parser.parse_args()
     return args
 
@@ -64,7 +64,7 @@ def make_dag():
     create_python_script_jobs(
         main_job_name="p_param_and_xeff_calculator",
         python_script=os.path.abspath(__file__),
-        job_args_list=[{"param": n, } for n in VALID_PARAMS],
+        job_args_list=[{"param_key": n, } for n in VALID_PARAMS],
         job_names_list=[f"p_{param}_and_xeff" for param in VALID_PARAMS],
     )
 

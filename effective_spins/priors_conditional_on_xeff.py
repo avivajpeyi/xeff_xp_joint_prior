@@ -1,7 +1,8 @@
 """a1, a2, q, theta1, theta2 conditional on xeff"""
+from typing import List, Optional
+
 import pandas as pd
 from bilby.core.prior import PriorDict
-from typing import Optional
 
 from .cupy_utils import uniform, xp
 
@@ -29,7 +30,7 @@ def p_param_and_xeff(
         param: float, xeff: float,
         init_a1a2qcos2_prior: PriorDict, param_key: str
 ) -> float:
-    """p(param and xeff), O(n^2)"""
+    """p(param_key and xeff), O(n^2)"""
     p_xeff_given_other = xp.asanyarray(
         p_xeff_given_a1a2qc2(
             param, xeff, init_a1a2qcos2_prior, param_key
@@ -41,15 +42,21 @@ def p_param_and_xeff(
 
 
 def p_param_given_xeff(
-        param: float, xeff: float,
-        init_a1a2qcos2_prior: PriorDict, param_key: str
+        param: Optional[float] = 0, xeff: Optional[float] = 0,
+        init_a1a2qcos2_prior: Optional[PriorDict] = None,
+        param_key: Optional[str] = "",
+        _p_param_and_xeff: Optional[List] = [],
+        _p_xeff: Optional[List] = []
 ) -> float:
-    """p(param|xeff), O(n^3)"""
-    _p_param_and_xeff = p_param_and_xeff(param, xeff, init_a1a2qcos2_prior, param_key)
-    return _p_param_and_xeff / p_xeff(xeff, init_a1a2qcos2_prior)
+    """p(param_key|xeff), O(n^3)"""
+    if len(_p_xeff) == 0:
+        _p_param_and_xeff = p_param_and_xeff(
+            param, xeff, init_a1a2qcos2_prior, param_key)
+        _p_xeff = p_xeff(xeff, init_a1a2qcos2_prior)
+    return _p_param_and_xeff / _p_xeff
 
 
-def p_xeff(xeff: float, init_a1a2qcos2_prior: Optional[PriorDict]=None,
+def p_xeff(xeff: float, init_a1a2qcos2_prior: Optional[PriorDict] = None,
            a1s=[], p_a1_and_xeff=[]) -> float:
     """
     p(xeff) = int_{ai \in a} p(a and xeff) da, O(n^3)

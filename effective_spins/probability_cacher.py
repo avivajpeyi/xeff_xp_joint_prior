@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 
 plt.style.use(
     'https://gist.githubusercontent.com/avivajpeyi/4d9839b1ceb7d3651cbb469bc6b0d69b/raw/4ee4a870126653d542572372ff3eee4e89abcab0/publication.mplstyle')
@@ -9,24 +10,32 @@ DATA_KEY = "probabilities"
 
 def store_probabilities(df: pd.DataFrame, fname: str):
     assert ".h5" in fname, f"{fname} is invalid"
+    if os.path.isfile(fname):
+        print(f"{fname} exsits. Overwritting with newly computed values.")
+        os.remove(fname)
+    df = df.drop_duplicates(keep='last')
     store = pd.HDFStore(fname)
     store.append(key=DATA_KEY, value=df, format="t", data_columns=True)
     store.close()
 
 
 def load_probabilities(fname) -> pd.DataFrame:
-    df = pd.read_hdf(fname, key=DATA_KEY)
+    df: pd.DataFrame = pd.read_hdf(fname, key=DATA_KEY)
+    df = df.drop_duplicates(keep='last')
     return df
 
 
 def plot_probs(x, y, p, xlabel, ylabel, plabel, fname):
     plt.close('all')
-    plt.tricontour(x, y, p, 15, linewidths=0.5, colors='k')
-    cmap = plt.tricontourf(
-        x, y, p, 15,
-        norm=plt.Normalize(vmax=abs(p).max(), vmin=-abs(p).max()),
-        cmap='inferno'
-    )
+    try:
+        plt.tricontour(x, y, p, 15, linewidths=0.5, colors='k')
+        cmap = plt.tricontourf(
+            x, y, p, 15,
+            norm=plt.Normalize(vmax=abs(p).max(), vmin=-abs(p).max()),
+            cmap='inferno'
+        )
+    except Exception:
+        cmap = plt.scatter(x,y,c=p)
     plt.colorbar(cmap, label=plabel)
     plt.ylabel(ylabel)
     plt.xlabel(xlabel)
