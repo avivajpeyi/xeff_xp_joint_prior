@@ -1,6 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 from effective_spins import probability_cacher
 from effective_spins.priors_conditional_on_xeff import p_param_given_xeff
@@ -18,11 +19,13 @@ def compute_and_store_p_param_given_xeff(param_key, prior_xeff_fname):
     df = df.merge(xeff_df, on='xeff')
     p_param_and_xeff_key = f"p_{param_key}_and_xeff"
     p_param_given_xeff_key = f"p_{param_key}_given_xeff"
-    df[p_param_given_xeff_key] = p_param_given_xeff(_p_xeff=df.p_xeff, _p_param_and_xeff=df[p_param_and_xeff_key])
+    p = p_param_given_xeff(_p_xeff=df.p_xeff, _p_param_and_xeff=df[p_param_and_xeff_key])
+    p = np.nan_to_num(p)
+    df[p_param_given_xeff_key] = p
     fname = os.path.join(OUTDIR, f"{p_param_given_xeff_key}.h5")
     probability_cacher.store_probabilities(df, fname)
     probability_cacher.plot_probs(
-        x=df[param_key], y=df['xeff'], p=df[p_param_given_xeff_key],
+        x=df[param_key], y=df['xeff'], p=p,
         xlabel=param_key, ylabel="xeff", plabel=p_param_given_xeff_key.replace('_', ' '),
         fname=fname.replace('.h5', '.png')
     )
