@@ -29,7 +29,7 @@ def compute_and_store_p_param_given_xeff(param_key, prior_xeff_fname):
         xlabel=param_key, ylabel="xeff", plabel=p_param_given_xeff_key.replace('_', ' '),
         fname=fname.replace('.h5', '.png')
     )
-    print(f"Saved {fname}")
+    print(f"Saved {fname} with {len(df)} datapoints")
 
 
 def main():

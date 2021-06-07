@@ -1,3 +1,11 @@
+"""
+python compute_and_store_prior_p_and_xeff.py --testing --param a1
+python compute_and_store_prior_p_and_xeff.py --testing --param a2
+python compute_and_store_prior_p_and_xeff.py --testing --param q
+python compute_and_store_prior_p_and_xeff.py --testing --param cos2
+
+"""
+
 import argparse
 import os
 
@@ -48,7 +56,7 @@ def generate_dataset(param_key):
         xlabel=param_key, ylabel="xeff", plabel=prob_key.replace("_", " "),
         fname=fname.replace('.h5', '.png')
     )
-    print(f"Saved {fname}")
+    print(f"Saved {fname} with {len(df)} datapoints.")
 
 
 def create_parser_and_read_args():
@@ -78,7 +86,7 @@ def main():
         if args.testing:
             print("TESTING: reducing num samples")
             global N
-            N = 20
+            N = 5
             priors_conditional_on_xeff.MCMC_SAMPLES = 100
 
         generate_dataset(param_key=args.param)

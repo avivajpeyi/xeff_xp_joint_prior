@@ -1,4 +1,4 @@
-from .cupy_utils import trapz, xp
+from .cupy_utils import xp
 
 
 def q_factor(q):

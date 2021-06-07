@@ -4,9 +4,9 @@ import unittest
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from .utils import uniform_distribution
 
 from effective_spins import distribution_rules
+from .utils import uniform_distribution
 
 
 class TestDistributionRules(unittest.TestCase):
@@ -14,8 +14,10 @@ class TestDistributionRules(unittest.TestCase):
         self.outdir = "tests/distribution_outdir"
         os.makedirs(self.outdir, exist_ok=True)
         self.N = 10000
-
-
+        self.a, self.pdf_a, self.dist_a = uniform_distribution(N=self.N)
+        self.b, self.pdf_b, self.dist_b = uniform_distribution(0, 1, N=self.N)
+        self.a_vals = np.linspace(-10, 10, self.N)
+        self.z_vals = np.linspace(-10, 10, self.N)
 
     # def tearDown(self):
     #     import shutil
@@ -23,68 +25,95 @@ class TestDistributionRules(unittest.TestCase):
     #         shutil.rmtree(self.outdir)
 
     def test_sum_rule(self):
-        a, pdf_a, dist_a = uniform_distribution(N=self.N)
-        b, pdf_b, dist_b = uniform_distribution(0, 1, N=self.N)
-        a_vals = np.linspace(-1, 1, self.N)
-        z_vals = np.linspace(-1, 2, self.N)
         pdf_c = distribution_rules.sum_distribution(
-            z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+            z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
         )
         self.assertGreater(np.sum(pdf_c), 1)
+
+        dist_c = distribution_rules.sum_dist_interp(z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob,
+                                                    pdf_b=self.dist_b.prob)
+        self.assertGreater(np.sum(dist_c(self.z_vals)), 1)
 
     def test_product_rule(self):
-        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
-        b, pdf_b, dist_b = self.uniform_distribution(0, 1,N=self.N)
-        a_vals = np.linspace(-1, 1, self.N)
-        z_vals = np.linspace(-1, 1, self.N)
         pdf_c = distribution_rules.product_distribution(
-            z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+            z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
         )
         self.assertGreater(np.sum(pdf_c), 1)
 
-    def test_inverse_rule(self):
-        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
-        a_vals = np.linspace(-10, 10, self.N)
-        pdf_c = distribution_rules.inverse_distribution(
-            a_vals=a_vals, pdf_a=dist_a.prob
+        dist_c = distribution_rules.prod_dist_interp(z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob,
+                                                     pdf_b=self.dist_b.prob)
+        self.assertGreater(np.sum(dist_c(self.z_vals)), 1)
+
+    def test_translate_rule(self):
+        s = 2
+        t = 1
+
+        pdf_c = distribution_rules.translate_distribution(
+            z_vals=self.z_vals, pdf_a=self.dist_a.prob, scale=s, translate=t
         )
         self.assertGreater(np.sum(pdf_c), 1)
+
+        dist_c = distribution_rules.translate_dist_interp(z_vals=self.z_vals, pdf_a=self.dist_a.prob, scale=s,
+                                                          translate=t)
+        self.assertGreater(np.sum(dist_c(self.z_vals)), 1)
 
     @pytest.mark.plot
-    def test_dist_plots(self):
-        a, pdf_a, dist_a = self.uniform_distribution(N=self.N)
-        b, pdf_b, dist_b = self.uniform_distribution(0, 1,N=self.N)
-        a_vals = np.linspace(-10, 10, self.N)
-        z_vals = np.linspace(-10, 10, self.N)
-        samples_inverse = 1.0 / a
-        samples_sum = a + b
-        sumples_prod = a * b
-
+    def test_trans_dist_plots(self):
+        s, t = 2, 1
         plot_distribution(
-            samples_sum,
-            distribution_rules.sum_distribution(
-                z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+            (self.a * s) + t,
+            distribution_rules.translate_distribution(
+                z_vals=self.z_vals, pdf_a=self.dist_a.prob, scale=s, translate=t
             ),
-            z_vals,
+            self.z_vals,
+            f"{self.outdir}/translate.png",
+            title="translate and scale of unif",
+            bins=np.linspace(-10, 10, 100),
+        )
+
+    def test_inverse_rule(self):
+        a, pdf_a, dist_a = uniform_distribution(N=self.N)
+        z_vals = np.linspace(-10, 10, self.N)
+        pdf_c = distribution_rules.inverse_distribution(
+            z_vals=self.z_vals, pdf_a=self.dist_a.prob,
+        )
+        self.assertGreater(np.sum(pdf_c), 1)
+
+        dist_c = distribution_rules.inv_dist_interp(z_vals=z_vals, pdf_a=dist_a.prob)
+        self.assertGreater(np.sum(dist_c(z_vals)), 1)
+
+    @pytest.mark.plot
+    def test_sum_dist_plots(self):
+        plot_distribution(
+            self.a + self.b,
+            distribution_rules.sum_distribution(
+                z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
+            ),
+            self.z_vals,
             f"{self.outdir}/sum.png",
             title="Sum of Unif"
         )
+
+    @pytest.mark.plot
+    def test_prod_dist_plots(self):
         plot_distribution(
-            sumples_prod,
+            self.a * self.b,
             distribution_rules.product_distribution(
-                z_vals=z_vals, a_vals=a_vals, pdf_a=dist_a.prob, pdf_b=dist_b.prob
+                z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
             ),
-            z_vals,
+            self.z_vals,
             f"{self.outdir}/prod.png",
             title="Prod of Unif"
         )
 
+    @pytest.mark.plot
+    def test_inv_dist_plots(self):
         plot_distribution(
-            samples_inverse,
+            1 / self.a,
             distribution_rules.inverse_distribution(
-                a_vals=a_vals, pdf_a=dist_a.prob
+                z_vals=self.z_vals, pdf_a=self.dist_a.prob
             ),
-            a_vals,
+            self.z_vals,
             f"{self.outdir}/inverse.png",
             title="Inverse of unif",
             bins=np.linspace(-10, 10, 100),
