@@ -63,20 +63,20 @@ def translate_distribution(z_vals, pdf_a, scale=1.0, translate=0.0, kwargs_a={})
 
 def prod_dist_interp(z_vals: xp.ndarray, a_vals: xp.ndarray, pdf_a: Callable, pdf_b: Callable) -> Callable:
     pdf_z = product_distribution(z_vals=z_vals, a_vals=a_vals, pdf_a=pdf_a, pdf_b=pdf_b)
-    return interp1d(x=z_vals, y=pdf_z)
+    return interp1d(x=z_vals, y=pdf_z, bounds_error=False)
 
 
 def sum_dist_interp(z_vals: xp.ndarray, a_vals: xp.ndarray, pdf_a: Callable, pdf_b: Callable) -> Callable:
     pdf_z = sum_distribution(z_vals=z_vals, a_vals=a_vals, pdf_a=pdf_a, pdf_b=pdf_b)
-    return interp1d(x=z_vals, y=pdf_z)
+    return interp1d(x=z_vals, y=pdf_z, bounds_error=False)
 
 
 def inv_dist_interp(z_vals: xp.ndarray, pdf_a: Callable) -> Callable:
     pdf_z = inverse_distribution(z_vals=z_vals, pdf_a=pdf_a)
-    return interp1d(x=z_vals, y=pdf_z)
+    return interp1d(x=z_vals, y=pdf_z, bounds_error=False)
 
 
 def translate_dist_interp(z_vals: xp.ndarray, pdf_a: Callable, scale: Optional[float] = 1.0,
                           translate: Optional[float] = 0.0) -> Callable:
     pdf_z = translate_distribution(z_vals=z_vals, pdf_a=pdf_a, scale=scale, translate=translate)
-    return interp1d(x=z_vals, y=pdf_z)
+    return interp1d(x=z_vals, y=pdf_z, bounds_error=False)
