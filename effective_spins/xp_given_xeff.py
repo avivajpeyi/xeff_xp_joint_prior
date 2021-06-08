@@ -23,15 +23,15 @@ def get_p_param_given_xeff(xeff=0):
         df = CACHED_DATA[k].copy()
         df = df[df['xeff'] == xeff]  # filter data
         p_funcs.update({
-            f"p_{k}": interp1d(x=df[k], y=df[f'p_{k}_given_xeff'], bounds_error=False)
+            f"p_{k}": interp1d(x=df[k], y=df[f'p_{k}_given_xeff'], fill_value='extrapolate')
         })
     return p_funcs['p_a1'], p_funcs['p_a2'], p_funcs['p_q'], p_funcs['p_cos2']
 
 
 def get_param_grid():
-    a1 = xp.linspace(0, 1, N)
-    a2 = xp.linspace(0, 1, N)
-    q = xp.linspace(0, 1, N)
+    a1 = xp.linspace(0.1, 1, N)
+    a2 = xp.linspace(0.1, 1, N)
+    q = xp.linspace(0.1, 1, N)
     cos2 = xp.linspace(-1, 1, N)
     return a1, a2, q, cos2
 
@@ -67,7 +67,7 @@ def get_p_sqrt_x2_plus_1_dist(z_vals, pdf_a):
     h = xp.sqrt(1 - z_vals ** 2)
     dh_dz = z_vals / h
     _pdf_z = pdf_a(h) * xp.abs(dh_dz)
-    return interp1d(x=z_vals, y=_pdf_z, bounds_error=False)
+    return interp1d(x=z_vals, y=_pdf_z, fill_value='extrapolate')
 
 
 def get_p_qplus1_a1_and_vals(p_q, p_a1):

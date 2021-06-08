@@ -102,9 +102,16 @@ class TestDistributionRules(unittest.TestCase):
                 z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
             ),
             self.z_vals,
-            f"{self.outdir}/prod.png",
             title="Prod of Unif"
         )
+        prob_c = distribution_rules.prod_dist_interp(
+            z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
+        )
+        plt.plot(self.z_vals, prob_c(self.z_vals), label="Interpolated PDF")
+        plt.legend()
+        plt.savefig(f"{self.outdir}/prod.png")
+        plt.close('all')
+
 
     @pytest.mark.plot
     def test_inv_dist_plots(self):
@@ -120,7 +127,8 @@ class TestDistributionRules(unittest.TestCase):
         )
 
 
-def plot_distribution(samples, pdf, xvals, fname, title="", bins=50):
+def plot_distribution(samples, pdf, xvals, fname="", title="", bins=50):
+    plt.close("all")
     plt.hist(samples, density=True, label="Hist(samples) PDF", bins=bins)
     plt.plot(xvals, pdf, label="Numerical PDF")
     plt.xlim(min(xvals), max(xvals))
@@ -128,8 +136,9 @@ def plot_distribution(samples, pdf, xvals, fname, title="", bins=50):
     plt.ylabel("p(z)")
     plt.legend()
     plt.suptitle(title)
-    plt.savefig(fname)
-    plt.close("all")
+    if fname:
+        plt.savefig(fname)
+
 
 
 if __name__ == "__main__":
