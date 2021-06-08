@@ -19,8 +19,8 @@ class TestXpGivenXeffPrior(unittest.TestCase):
     #     if os.path.exists(self.outdir):
     #         shutil.rmtree(self.outdir)
 
-    def test_xp_given_xeff_prior(self):
-        val = xp_given_xeff.p_xp_given_xeff(xp=0.1, xeff=1)
+    # def test_xp_given_xeff_prior(self):
+    #     val = xp_given_xeff.p_xp_given_xeff(xp=0.1, xeff=1)
 
 
     def test_plots(self):
