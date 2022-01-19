@@ -23,15 +23,15 @@ def get_p_param_given_xeff(xeff=0):
         df = CACHED_DATA[k].copy()
         df = df[df['xeff'] == xeff]  # filter data
         p_funcs.update({
-            f"p_{k}": interp1d(x=df[k], y=df[f'p_{k}_given_xeff'], fill_value='extrapolate')
+            f"p_{k}": interp1d(x=df[k], y=df[f'p_{k}_given_xeff'], fill_value=0, bounds_error=False)
         })
     return p_funcs['p_a1'], p_funcs['p_a2'], p_funcs['p_q'], p_funcs['p_cos2']
 
 
 def get_param_grid():
-    a1 = xp.linspace(0.1, 1, N)
-    a2 = xp.linspace(0.1, 1, N)
-    q = xp.linspace(0.1, 1, N)
+    a1 = xp.linspace(0.01, 1, N)
+    a2 = xp.linspace(0.01, 1, N)
+    q = xp.linspace(0.01, 1, N)
     cos2 = xp.linspace(-1, 1, N)
     return a1, a2, q, cos2
 
@@ -44,12 +44,12 @@ def get_p_xp_given_xeff_and_vals(xeff):
     where
      a = xeff(q+1)/a1
      b = a2qcos2/a1
-     c = a + b
+     c = a - b
      d = sqrt(1-c^2)
     """
     a1, a2, q, cos2 = get_param_grid()
     p_a1, p_a2, p_q, p_cos2 = get_p_param_given_xeff(xeff)
-    d, p_d = get_p_d_and_vals(a2, p_a1, p_a2, p_q, p_cos2)
+    d, p_d = get_p_d_and_vals(a2, p_a1, p_a2, p_q, p_cos2, xeff)
 
     p_xp = prod_dist_interp(z_vals=d, a_vals=a1, pdf_a=p_a1, pdf_b=p_d)
 
@@ -67,23 +67,26 @@ def get_p_sqrt_x2_plus_1_dist(z_vals, pdf_a):
     h = xp.sqrt(1 - z_vals ** 2)
     dh_dz = z_vals / h
     _pdf_z = pdf_a(h) * xp.abs(dh_dz)
-    return interp1d(x=z_vals, y=_pdf_z, fill_value='extrapolate')
+    return interp1d(x=z_vals, y=_pdf_z, fill_value=0, bounds_error=False)
 
 
-def get_p_qplus1_a1_and_vals(p_q, p_a1):
+def get_p_xeffqplus1_a1_and_vals(p_q, p_a1, xeff):
     qplus1 = xp.linspace(1, 2, N)
     p_qplus1 = translate_dist_interp(z_vals=qplus1, pdf_a=p_q, translate=1)
 
+    xeffqplus1 = xp.linspace(0.1, 2, N)
+    p_xeffqplus1 = translate_dist_interp(z_vals=xeffqplus1, pdf_a=p_qplus1, scale=xeff)
+
     p_inv_a1 = get_p_inv_a1(p_a1)
 
-    qplus1_a1 = xp.linspace(0, 20, N)
-    p_qplus1_a1 = prod_dist_interp(z_vals=qplus1_a1, a_vals=qplus1, pdf_a=p_qplus1, pdf_b=p_inv_a1)
-    return qplus1_a1, p_qplus1_a1
+    xeffqplus1_a1 = xp.linspace(0.5, 2, N)
+    p_xeffqplus1_a1 = prod_dist_interp(z_vals=xeffqplus1_a1, a_vals=xeffqplus1, pdf_a=p_xeffqplus1, pdf_b=p_inv_a1)
+    return xeffqplus1_a1, p_xeffqplus1_a1
 
 
 def get_p_a2qc2_a1_and_vals(a2, p_a1, p_a2, p_q, p_cos2):
     """p of a2qcos2/a1"""
-    a2q = xp.linspace(0, 1, N)
+    a2q = xp.linspace(0.01, 1, N)
     p_a2q = prod_dist_interp(z_vals=a2q, a_vals=a2, pdf_a=p_a2, pdf_b=p_q)
 
     a2qc2 = xp.linspace(-1, 1, N)
@@ -91,25 +94,27 @@ def get_p_a2qc2_a1_and_vals(a2, p_a1, p_a2, p_q, p_cos2):
 
     p_inv_a1 = get_p_inv_a1(p_a1)
 
-    a2qc2_a1 = xp.linspace(-10, 10, N)
+    a2qc2_a1 = xp.linspace(-1, 1, N)
     p_a2qc2_a1 = prod_dist_interp(z_vals=a2qc2_a1, a_vals=a2qc2, pdf_a=p_a2qc2, pdf_b=p_inv_a1)
     return a2qc2_a1, p_a2qc2_a1
 
 
-def get_p_c_and_vals(a2, p_a1, p_a2, p_q, p_cos2):
+def get_p_c_and_vals(a2, p_a1, p_a2, p_q, p_cos2, xeff):
     """p of xeff(q+1)/a1 + a2qcos2/a1"""
-    a, p_a = get_p_qplus1_a1_and_vals(p_q, p_a1)
+    a, p_a = get_p_xeffqplus1_a1_and_vals(p_q, p_a1, xeff)
     b, p_b = get_p_a2qc2_a1_and_vals(a2, p_a1, p_a2, p_q, p_cos2)
+    neg_b = xp.linspace(-20, 0.01, N)
+    neg_p_b = translate_dist_interp(z_vals=neg_b, pdf_a=p_b, scale=-1)
 
-    c = xp.linspace(0, 1, N)
-    p_c = sum_dist_interp(z_vals=c, a_vals=a, pdf_a=p_a, pdf_b=p_b)
+    c = xp.linspace(0.01, 1, N)
+    p_c = sum_dist_interp(z_vals=c, a_vals=a, pdf_a=p_a, pdf_b=neg_p_b)
     return c, p_c
 
 
-def get_p_d_and_vals(a2, p_a1, p_a2, p_q, p_cos2):
+def get_p_d_and_vals(a2, p_a1, p_a2, p_q, p_cos2, xeff):
     """p of sqrt(1-c**2)"""
-    c, p_c = get_p_c_and_vals(a2, p_a1, p_a2, p_q, p_cos2)
-    d = xp.linspace(0, 1, N)
+    c, p_c = get_p_c_and_vals(a2, p_a1, p_a2, p_q, p_cos2, xeff)
+    d = xp.linspace(0.01, 1, N)
     p_d = get_p_sqrt_x2_plus_1_dist(z_vals=d, pdf_a=p_c)
     return d, p_d
 

@@ -59,17 +59,22 @@ class TestDistributionRules(unittest.TestCase):
 
     @pytest.mark.plot
     def test_trans_dist_plots(self):
-        s, t = 2, 1
+        s, t = 0.5, 1
+        fname = f"{self.outdir}/translate.png"
+        bins =np.linspace(-10, 10, 100)
         plot_distribution(
             (self.a * s) + t,
             distribution_rules.translate_distribution(
                 z_vals=self.z_vals, pdf_a=self.dist_a.prob, scale=s, translate=t
             ),
             self.z_vals,
-            f"{self.outdir}/translate.png",
-            title="translate and scale of unif",
-            bins=np.linspace(-10, 10, 100),
+            title=f"{s}*unif + {t}",
+            bins=bins,
         )
+        plt.hist(self.a, density=True, bins=bins, label="original")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(fname)
 
     def test_inverse_rule(self):
         a, pdf_a, dist_a = uniform_distribution(N=self.N)
@@ -84,15 +89,19 @@ class TestDistributionRules(unittest.TestCase):
 
     @pytest.mark.plot
     def test_sum_dist_plots(self):
+        fname =  f"{self.outdir}/sum.png"
         plot_distribution(
             self.a + self.b,
             distribution_rules.sum_distribution(
                 z_vals=self.z_vals, a_vals=self.a_vals, pdf_a=self.dist_a.prob, pdf_b=self.dist_b.prob
             ),
             self.z_vals,
-            f"{self.outdir}/sum.png",
-            title="Sum of Unif"
+            title="a+b"
         )
+        plt.hist(self.a, histtype='step', density=True, label="a")
+        plt.hist(self.b, histtype='step', density=True, label="b")
+        plt.legend()
+        plt.savefig(fname)
 
     @pytest.mark.plot
     def test_prod_dist_plots(self):
