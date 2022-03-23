@@ -6,7 +6,7 @@ from bilby.core.prior import PriorDict
 
 from .cupy_utils import uniform, xp
 
-MCMC_SAMPLES = 10000
+MC_SAMPLES = 10000
 INTEGRATION_POINTS = 1000
 
 
@@ -20,7 +20,7 @@ def p_xeff_given_a1a2qc2(
         init_a1a2qcos2_prior: PriorDict, param_key: str
 ) -> float:
     """p(xeff|a1,a2,q,c2), O(n)"""
-    s = pd.DataFrame(init_a1a2qcos2_prior.sample(MCMC_SAMPLES))
+    s = pd.DataFrame(init_a1a2qcos2_prior.sample(MC_SAMPLES))
     s[param_key] = param
     xeff_min, xeff_max = xeff_lim(s.a1, s.a2, s.q, s.cos2)
     return uniform.pdf(xeff, loc=xeff_min, scale=xeff_max - xeff_min)
@@ -37,8 +37,8 @@ def p_param_and_xeff(
         ))
     p_param = init_a1a2qcos2_prior[param_key].prob(param)
     p_xeff_given_other = xp.nan_to_num(p_xeff_given_other)
-    # dont need p_other, only p_param as MCMC
-    return (1.0 / MCMC_SAMPLES) * xp.sum(p_xeff_given_other * p_param)
+    # dont need p_other, only p_param as MC
+    return (1.0 / MC_SAMPLES) * xp.sum(p_xeff_given_other * p_param)
 
 
 def p_param_given_xeff(
