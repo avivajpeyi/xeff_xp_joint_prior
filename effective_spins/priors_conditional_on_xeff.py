@@ -6,8 +6,8 @@ from bilby.core.prior import PriorDict
 
 from .cupy_utils import uniform, xp
 
-MC_SAMPLES = 10000
-INTEGRATION_POINTS = 1000
+MC_SAMPLES = 100000
+INTEGRATION_POINTS = 10000
 
 
 def xeff_lim(a1: xp.ndarray, a2: xp.ndarray, q: xp.ndarray, cos2: xp.ndarray):

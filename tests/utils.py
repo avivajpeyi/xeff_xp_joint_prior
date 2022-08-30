@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 from bilby.core.prior import Uniform
 from bilby.core.prior import PriorDict
+from scipy.ndimage import gaussian_filter
+from scipy.stats import gaussian_kde
 
 from effective_spins.conversions import (
     calculate_xeff,
@@ -26,8 +28,6 @@ def uniform_distribution(min=-1, max=1, N=10000):
     samples = dist.sample(N)
     pdf = dist.prob(samples)
     return samples, pdf, dist
-
-
 
 
 def get_traditional_samples(num_samples=10 ** 5):
@@ -61,3 +61,40 @@ def plot_funct_and_samples(func, samples, limits, labels, func_kwargs={}, bins=1
     ax1.set_xlim(limits[0], limits[1])
     plt.tight_layout()
     return fig
+
+
+def gauss_smooth(args, smooth):
+    x, y, z = args
+    z = gaussian_filter(z, smooth)
+    return x, y, z
+
+def plot_heatmap(x, y, z, ax, cmap, add_cbar=False, smooth=None):
+    x = np.unique(x)
+    y = np.unique(y)
+    X, Y = np.meshgrid(x, y, indexing='ij')
+    Z = z.reshape(len(x), len(y))
+    args = (X, Y, Z)
+    if smooth:
+        args = gauss_smooth(args, smooth)
+    cbar = ax.pcolor(*args, cmap=cmap, vmin=np.nanmin(z), vmax=np.nanmax(z), zorder=-100)
+    if add_cbar:
+        fig = ax.get_figure()
+        cbar = fig.colorbar(cbar, ax=ax)
+        return cbar
+    return None
+
+
+def get_kde(x, y):
+    return gaussian_kde(np.vstack([x, y]))
+
+
+def evaluate_kde_on_grid(kde_x, kde_y, xrng, yrng, num_gridpoints=100j):
+    kde = get_kde(kde_x, kde_y)
+    xmin, xmax = np.min(xrng), np.max(xrng)
+    ymin, ymax = np.min(yrng), np.max(yrng)
+    x_grid, y_grid = np.mgrid[xmin:xmax:num_gridpoints, ymin:ymax:num_gridpoints]
+    xy_array = np.vstack([x_grid.ravel(), y_grid.ravel()])
+    z = kde(xy_array).T
+    return x_grid, y_grid, z.reshape(x_grid.shape)
+
+

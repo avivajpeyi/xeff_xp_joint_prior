@@ -7,8 +7,10 @@ import pytest
 from tqdm.auto import tqdm
 
 from effective_spins import priors_conditional_on_xeff
+from effective_spins.conversions import calculate_xeff
 from . import utils
 
+CLEAN = False
 
 class TestPriorConditionalOnXeff(unittest.TestCase):
     def setUp(self):
@@ -20,7 +22,7 @@ class TestPriorConditionalOnXeff(unittest.TestCase):
 
     def tearDown(self):
         import shutil
-        if os.path.exists(self.outdir):
+        if os.path.exists(self.outdir) and CLEAN:
             shutil.rmtree(self.outdir)
 
     def plot_conditional_prior(self, param, xeffs, param_key):
@@ -81,6 +83,37 @@ class TestPriorConditionalOnXeff(unittest.TestCase):
             param_key="a1"
         )
         self.assertNotEqual(p_a1, 1)
+
+    def test_p_q_and_xeff(self):
+        fig, axes = plt.subplots(nrows=2, ncols=1, sharex=True)
+
+        p = self.p.sample(100000)
+        p['xeff'] = calculate_xeff(**p)
+        # x, y, p = utils.evaluate_kde_on_grid(kde_x=p['xeff'], kde_y=p['q'], xrng=[-1,1],yrng=[0,1], num_gridpoints=300j)
+        # utils.plot_heatmap(x, y, p, axes[0], cmap="viridis")
+        axes[0].hist2d(p['xeff'], p['q'])
+
+        self.N = 1000
+        qs = np.linspace(0, 1, self.N)
+        xeffs = np.linspace(-1, 1, self.N)
+        priors_conditional_on_xeff.MCMC_SAMPLES = 2000
+        q_grid, xeff_grid, p_grid = [], [], []
+        for xeff in tqdm(xeffs, desc=f"p(q and xeff) "):
+            for q in qs:
+                p_val = priors_conditional_on_xeff.p_param_and_xeff(
+                    param=q,
+                    xeff=xeff,
+                    init_a1a2qcos2_prior=self.p,
+                    param_key='q',
+                )
+                p_grid.append(p_val)
+                q_grid.append(q)
+                xeff_grid.append(xeff)
+
+        utils.plot_heatmap(np.array(xeff_grid), np.array(q_grid), np.array(p_grid), axes[1], cmap="viridis")
+        fig.savefig(self.outdir + "/p_q_and_xeff_grid.png")
+
+
 
 
 if __name__ == "__main__":
